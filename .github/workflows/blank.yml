@@ -3,6 +3,7 @@ name: Add Merge Prefix to PRs
 on:
   pull_request_target:
     types: [closed]
+  workflow_dispatch:
 
 permissions:
   pull-requests: write
@@ -15,17 +16,27 @@ jobs:
 
     steps:
       - name: Add merge prefix
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const pr = context.payload.pull_request;
-          const number = pr.number;
-          const oldTitle = pr.title;
-          const newTitle = `Merged PR ${number}: ${oldTitle}`;
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const number = pr.number;
+            const oldTitle = pr.title;
 
-          await github.rest.pulls.update({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: number,
-            title: newTitle
-          });
+            // Avoid double-prefixing
+            const alreadyPrefixed = /^Merged PR \d+: /.test(oldTitle);
+            if (alreadyPrefixed) {
+              core.info(`Title already prefixed: "${oldTitle}"`);
+              return;
+            }
+
+            const newTitle = `Merged PR ${number}: ${oldTitle}`;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: number,
+              title: newTitle
+            });
+
+            core.info(`Updated PR #${number} title to: ${newTitle}`);
