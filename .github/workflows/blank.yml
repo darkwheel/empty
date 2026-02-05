@@ -1,8 +1,12 @@
 name: Add Merge Prefix to PR
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
+
+permissions:
+  pull-requests: write
+  contents: write
 
 jobs:
   prefix:
@@ -11,17 +15,17 @@ jobs:
 
     steps:
       - name: Add merge prefix
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            const number = pr.number;
-            const oldTitle = pr.title;
-            const newTitle = `Merged PR ${number}: ${oldTitle}`;
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const number = pr.number;
+          const oldTitle = pr.title;
+          const newTitle = `Merged PR ${number}: ${oldTitle}`;
 
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: number,
-              title: newTitle
-            });
+          await github.rest.pulls.update({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: number,
+            title: newTitle
+          });
