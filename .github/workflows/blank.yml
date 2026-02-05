@@ -1,4 +1,4 @@
-name: Add Merge Prefix to PRs
+name: Add Merge Prefix to PR
 
 on:
   pull_request_target:
