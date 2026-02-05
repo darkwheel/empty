@@ -1,0 +1,27 @@
+name: Add Merge Prefix to PR
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  prefix:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add merge prefix
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const number = pr.number;
+            const oldTitle = pr.title;
+            const newTitle = `Merged PR ${number}: ${oldTitle}`;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: number,
+              title: newTitle
+            });
